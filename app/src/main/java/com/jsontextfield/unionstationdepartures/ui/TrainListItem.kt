@@ -2,8 +2,8 @@ package com.jsontextfield.unionstationdepartures.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,29 +18,32 @@ import androidx.compose.ui.unit.dp
 import com.jsontextfield.unionstationdepartures.Train
 
 @Composable
-fun TrainListItem(train: Train) {
+fun TrainListItem(train: Train, useAlternateColor: Boolean = false) {
     ListItem(
+        tonalElevation = if (useAlternateColor) 1.dp else 0.dp,
         headlineContent = { Text(train.destination) },
-        supportingContent = { Text("Platform ${train.platform}") },
+        supportingContent = { },
         leadingContent = {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .shadow(4.dp, CircleShape)
                     .clip(CircleShape)
-                    .width(40.dp)
-                    .height(40.dp)
-                    .background(color = Color(train.color))
+                    .size(40.dp)
+                    .background(color = train.color)
             ) {
-
                 Text(
-                    train.name,
+                    train.code,
                     textAlign = TextAlign.Center,
                     color = Color.White,
                 )
             }
         },
-        trailingContent = { Text(train.departureTime, maxLines = 2, textAlign = TextAlign.Center) }
+        trailingContent = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(train.platform)
+                Text(train.departureTime, maxLines = 2, textAlign = TextAlign.Center)
+            }
+        }
     )
 }
 
@@ -49,9 +51,11 @@ fun TrainListItem(train: Train) {
 @Composable
 fun TrainListItemPreview() {
     val train = Train(
-        destination = "Bloomington",
+        destination = "Bloomington GO",
         platform = "4, 5",
         name = "RH",
+        departureTime = "12:34",
+        color = Color(0xFF0099C7)
     )
     TrainListItem(train)
 }

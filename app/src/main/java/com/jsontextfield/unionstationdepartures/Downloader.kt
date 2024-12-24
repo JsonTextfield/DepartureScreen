@@ -1,20 +1,28 @@
 package com.jsontextfield.unionstationdepartures
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
+import com.jsontextfield.unionstationdepartures.ui.theme.Barrie
+import com.jsontextfield.unionstationdepartures.ui.theme.Kitchener
+import com.jsontextfield.unionstationdepartures.ui.theme.LakeshoreEast
+import com.jsontextfield.unionstationdepartures.ui.theme.LakeshoreWest
+import com.jsontextfield.unionstationdepartures.ui.theme.Milton
+import com.jsontextfield.unionstationdepartures.ui.theme.RichmondHill
+import com.jsontextfield.unionstationdepartures.ui.theme.Stouffville
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.IOException
 import org.json.JSONException
 import org.json.JSONObject
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 object Downloader {
     private val client by lazy { OkHttpClient() }
 
+
     suspend fun download(apiKey: String): List<Train> {
-        val url = "https://api.openmetrolinx.com/OpenDataAPI/api/V1/Stop/NextService/UN?key=$apiKey"
+        val url = "https://api.openmetrolinx.com/OpenDataAPI/api/V1/ServiceUpdate/UnionDepartures/All?key=$apiKey"
         Log.e("OkHttp", url)
         val request: Request = Request.Builder()
             .url(url)
@@ -22,39 +30,34 @@ object Downloader {
         try {
             val jsonString = client.newCall(request).execute().body?.string() ?: ""
             val trainsJson = JSONObject(jsonString)
-                .getJSONObject("NextService")
-                .getJSONArray("Lines")
+                .getJSONObject("AllDepartures")
+                .getJSONArray("Trip")
             return (0 until trainsJson.length()).map {
                 val destination =
-                    trainsJson.getJSONObject(it).getString("DirectionName").split(" - ").last()
-                val platform = trainsJson.getJSONObject(it).getString("ActualPlatform")
-                    .ifBlank { trainsJson.getJSONObject(it).getString("ScheduledPlatform") }
-                    .ifBlank { "-" }
-                val departureTime = trainsJson.getJSONObject(it).getString("ComputedDepartureTime")
-                    .ifBlank { trainsJson.getJSONObject(it).getString("ScheduledDepartureTime") }
-                    .ifBlank { "-" }
+                    trainsJson.getJSONObject(it).getString("Service").split(" - ").last()
+                val platform = trainsJson.getJSONObject(it).getString("Platform")
+                val departureTime = trainsJson.getJSONObject(it).getString("Time")
                 val inFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 val outFormatter = DateTimeFormatter.ofPattern("HH:mm")
                 val departureTimeString = LocalDateTime.parse(departureTime, inFormatter).format(outFormatter)
-                val name = trainsJson.getJSONObject(it).getString("LineCode")
-                val color : Int = when (name) {
-                    "ST" -> 0xFF794500.toInt()
-                    "RH" -> 0xFF0099c7.toInt()
-                    "MI" -> 0xFFf57f25.toInt()
-                    "LW" -> 0xFF98002e.toInt()
-                    "LE" -> 0xFFff0d00.toInt()
-                    "BR" -> 0xFF003767.toInt()
-                    "GT", "KI" -> 0xFF00853e.toInt()
-                    else -> 0xFF000000.toInt()
+                val color : Color = when (destination) {
+                    "Stouffville" -> Stouffville
+                    "Richmond Hill" -> RichmondHill
+                    "Milton" -> Milton
+                    "Lakeshore West" -> LakeshoreWest
+                    "Lakeshore East" -> LakeshoreEast
+                    "Barrie" -> Barrie
+                    "Kitchener" -> Kitchener
+                    else -> Color(0xFF000000)
                 }
                 Train(
-                    name = name,
+                    name = "",
                     destination = destination,
                     platform = platform,
                     departureTime = departureTimeString,
-                    color = color
+                    color = color,
                 )
-            }.sortedWith(compareBy({ it.name }, { it.departureTime }))
+            }.sortedWith(compareBy({ it.name }, { it.tripOrder }))
         } catch (e: IOException) {
             Log.e("OkHttp", e.toString())
             return emptyList()
