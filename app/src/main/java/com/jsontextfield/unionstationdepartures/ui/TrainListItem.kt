@@ -33,6 +33,7 @@ fun TrainListItem(train: Train, useAlternateColor: Boolean = false) {
             ) {
                 Text(
                     train.code,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     color = Color.White,
                 )
@@ -52,10 +53,28 @@ fun TrainListItem(train: Train, useAlternateColor: Boolean = false) {
 fun TrainListItemPreview() {
     val train = Train(
         destination = "Bloomington GO",
-        platform = "4, 5",
-        name = "RH",
+        platform = "4 & 5",
+        code = "RH",
         departureTime = "12:34",
         color = Color(0xFF0099C7)
     )
     TrainListItem(train)
+}
+
+@Preview
+@Composable
+fun TrainListPreview() {
+    Column {
+        TrainLine.entries.map {
+            TrainListItem(
+                Train(
+                    destination = it.title,
+                    code = it.code,
+                    color = it.colour,
+                    departureTime = "12:34",
+                    platform = "4 & 5",
+                )
+            )
+        }
+    }
 }
