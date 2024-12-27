@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -22,7 +23,6 @@ fun TrainListItem(train: Train, useAlternateColor: Boolean = false) {
     ListItem(
         tonalElevation = if (useAlternateColor) 1.dp else 0.dp,
         headlineContent = { Text(train.destination) },
-        supportingContent = { },
         leadingContent = {
             Box(
                 contentAlignment = Alignment.Center,
@@ -40,7 +40,7 @@ fun TrainListItem(train: Train, useAlternateColor: Boolean = false) {
         },
         trailingContent = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(train.platform)
+                Text(train.platform, fontWeight = FontWeight.Bold)
                 Text(train.departureTime, maxLines = 2, textAlign = TextAlign.Center)
             }
         }
